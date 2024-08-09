@@ -9,7 +9,7 @@ const useGetAllPost = () => {
     const fetchAllPost = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:8000/api/v1/post/all",
+          "https://social-media-app-61r2.onrender.com/api/v1/post/all",
           { withCredentials: true }
         );
         if (res.data.success) {
