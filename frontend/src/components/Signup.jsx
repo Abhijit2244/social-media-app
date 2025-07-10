@@ -26,7 +26,7 @@ const Signup = () => {
     try {
       setLoading(true);
       const res = await axios.post(
-        "https://social-media-app-61r2.onrender.com/api/v1/user/register",
+        "https://social-media-app-1-qdnj.onrender.com/api/v1/user/register",
         input,
         {
           headers: {

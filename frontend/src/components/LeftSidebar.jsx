@@ -31,7 +31,7 @@ const LeftSidebar = () => {
   const logoutHandler = async () => {
     try {
       const res = await axios.get(
-        "https://social-media-app-61r2.onrender.com/api/v1/user/logout",
+        "https://social-media-app-1-qdnj.onrender.com/api/v1/user/logout",
         { withCredentials: true }
       );
       if (res.data.success) {

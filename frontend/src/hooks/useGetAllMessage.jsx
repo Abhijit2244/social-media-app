@@ -11,7 +11,7 @@ const useGetAllMessage = () => {
     const fetchAllMessage = async () => {
       try {
         const res = await axios.get(
-          `https://social-media-app-61r2.onrender.com/api/v1/message/all/${selectedUser?._id}`,
+          `https://social-media-app-1-qdnj.onrender.com/api/v1/message/all/${selectedUser?._id}`,
           { withCredentials: true }
         );
         if (res.data.success) {
