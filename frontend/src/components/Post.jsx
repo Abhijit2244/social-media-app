@@ -1,26 +1,32 @@
 import React, { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
-import { Bookmark, MessageCircle, MoreHorizontal, Send } from "lucide-react";
+import { MessageCircle, MoreHorizontal, Send } from "lucide-react";
 import { Button } from "./ui/button";
-import { FaHeart, FaRegHeart } from "react-icons/fa";
+import { FaRegHeart } from "react-icons/fa";
+import { FaHeart } from "react-icons/fa";
 import CommentDialog from "./CommentDialog";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { toast } from "sonner";
 import { setPosts, setSelectedPost } from "@/redux/postSlice";
+import { FaRegCircleUser } from "react-icons/fa6";
 import { Badge } from "./ui/badge";
-
+import { FaRegBookmark, FaBookmark } from "react-icons/fa6";
+import { Link } from "react-router-dom";
+import SendDialog from "./SendDialog";
+import { API_BASE_URL } from "@/main";
 const Post = ({ post }) => {
   const [text, setText] = useState("");
+  const [bookmarked, setBookmarked] = useState(false);
   const [open, setOpen] = useState(false);
+  const [opensend, setOpensend] = useState(false);
   const { user } = useSelector((store) => store.auth);
   const { posts } = useSelector((store) => store.post);
   const [liked, setLiked] = useState(post.likes.includes(user?._id) || false);
   const [postLike, setPostLike] = useState(post.likes.length);
   const [comment, setComment] = useState(post.comments);
   const dispatch = useDispatch();
-
   const changeEventHandler = (e) => {
     const inputText = e.target.value;
     if (inputText.trim()) {
@@ -30,20 +36,17 @@ const Post = ({ post }) => {
     }
   };
 
-  const likeOrDislikeHandler = async () => {
+  const likeOrdislikehandler = async () => {
     try {
       const action = liked ? "dislike" : "like";
       const res = await axios.get(
-        `https://social-media-app-1-qdnj.onrender.com/api/v1/post/${post._id}/${action}`,
+        `${API_BASE_URL}/api/v1/post/${post._id}/${action}`,
         { withCredentials: true }
       );
-      console.log(res.data);
       if (res.data.success) {
         const updatedLikes = liked ? postLike - 1 : postLike + 1;
         setPostLike(updatedLikes);
         setLiked(!liked);
-
-        // apne post ko update krunga
         const updatedPostData = posts.map((p) =>
           p._id === post._id
             ? {
@@ -61,11 +64,28 @@ const Post = ({ post }) => {
       console.log(error);
     }
   };
-
+  const deletePostHandler = async () => {
+    try {
+      const res = await axios.delete(
+        `${API_BASE_URL}/api/v1/post/delete/${post?._id}`,
+        { withCredentials: true }
+      );
+      if (res.data.success) {
+        const updatedData = posts.filter(
+          (postItem) => postItem?._id !== post?._id
+        );
+        dispatch(setPosts(updatedData));
+        toast.success(res.data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response.data.message);
+    }
+  };
   const commentHandler = async () => {
     try {
       const res = await axios.post(
-        `https://social-media-app-1-qdnj.onrender.com/api/v1/post/${post._id}/comment`,
+        `${API_BASE_URL}/api/v1/post/${post._id}/comment`,
         { text },
         {
           headers: {
@@ -74,66 +94,49 @@ const Post = ({ post }) => {
           withCredentials: true,
         }
       );
-      console.log(res.data);
       if (res.data.success) {
-        const updatedCommentData = [...comment, res.data.comment];
-        setComment(updatedCommentData);
+        const updatedData = [...comment, res.data.comment];
+        setComment(updatedData);
 
         const updatedPostData = posts.map((p) =>
-          p._id === post._id ? { ...p, comments: updatedCommentData } : p
+          p._id === post._id ? { ...p, comments: updatedData } : p
         );
-
         dispatch(setPosts(updatedPostData));
         toast.success(res.data.message);
         setText("");
       }
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (error) {}
   };
-
-  const deletePostHandler = async () => {
-    try {
-      const res = await axios.delete(
-        `https://social-media-app-1-qdnj.onrender.com/api/v1/post/delete/${post?._id}`,
-        { withCredentials: true }
-      );
-      if (res.data.success) {
-        const updatedPostData = posts.filter(
-          (postItem) => postItem?._id !== post?._id
-        );
-        dispatch(setPosts(updatedPostData));
-        toast.success(res.data.message);
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error(error.response.data.messsage);
-    }
-  };
-
   const bookmarkHandler = async () => {
     try {
       const res = await axios.get(
-        `https://social-media-app-1-qdnj.onrender.com/api/v1/post/${post?._id}/bookmark`,
+        `${API_BASE_URL}/api/v1/post/${post?._id}/bookmark`,
         { withCredentials: true }
       );
       if (res.data.success) {
         toast.success(res.data.message);
+        setBookmarked((prev) => !prev);
       }
     } catch (error) {
       console.log(error);
     }
   };
   return (
-    <div className="my-8 w-full max-w-sm mx-auto">
+    <div className="my -8 w-full max-w-sm mx-auto">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Avatar>
-            <AvatarImage src={post.author?.profilePicture} alt="post_image" />
-            <AvatarFallback>CN</AvatarFallback>
-          </Avatar>
+        <div className="flex items-center gap-2 ">
+          <Link to={`/profile/${post.author._id}`}>
+            <Avatar className="w-6 h-6">
+              <AvatarImage src={post.author?.profilePicture} alt="@shadcn" />
+              <AvatarFallback>
+                <FaRegCircleUser />
+              </AvatarFallback>
+            </Avatar>
+          </Link>
           <div className="flex items-center gap-3">
-            <h1>{post.author?.username}</h1>
+            <Link to={`/profile/${post.author._id}`}>
+              <h1>{post.author?.username}</h1>
+            </Link>
             {user?._id === post.author._id && (
               <Badge variant="secondary">Author</Badge>
             )}
@@ -153,8 +156,12 @@ const Post = ({ post }) => {
               </Button>
             )}
 
-            <Button variant="ghost" className="cursor-pointer w-fit">
-              Add to favorites
+            <Button
+              variant="ghost"
+              onClick={bookmarkHandler}
+              className="cursor-pointer w-fit "
+            >
+              Add to favourites
             </Button>
             {user && user?._id === post?.author._id && (
               <Button
@@ -171,25 +178,23 @@ const Post = ({ post }) => {
       <img
         className="rounded-sm my-2 w-full aspect-square object-cover"
         src={post.image}
-        alt="post_img"
+        alt=""
       />
-
       <div className="flex items-center justify-between my-2">
         <div className="flex items-center gap-3">
           {liked ? (
             <FaHeart
-              onClick={likeOrDislikeHandler}
+              onClick={likeOrdislikehandler}
               size={"24"}
               className="cursor-pointer text-red-600"
             />
           ) : (
             <FaRegHeart
-              onClick={likeOrDislikeHandler}
+              onClick={likeOrdislikehandler}
               size={"22px"}
               className="cursor-pointer hover:text-gray-600"
             />
           )}
-
           <MessageCircle
             onClick={() => {
               dispatch(setSelectedPost(post));
@@ -197,29 +202,42 @@ const Post = ({ post }) => {
             }}
             className="cursor-pointer hover:text-gray-600"
           />
-          <Send className="cursor-pointer hover:text-gray-600" />
+          <Send
+            className="cursor-pointer hover:text-gray-600"
+            onClick={() => {
+              setOpensend(true);
+            }}
+          />
+          <SendDialog open={opensend} setOpen={setOpensend} />
         </div>
-        <Bookmark
-          onClick={bookmarkHandler}
-          className="cursor-pointer hover:text-gray-600"
-        />
+        {bookmarked ? (
+          <FaBookmark
+            size="25px"
+            onClick={bookmarkHandler}
+            className="cursor-pointer hover:text-gray-600"
+          />
+        ) : (
+          <FaRegBookmark
+            size="25px"
+            onClick={bookmarkHandler}
+            className="cursor-pointer hover:text-gray-600"
+          />
+        )}
       </div>
       <span className="font-medium block mb-2">{postLike} likes</span>
       <p>
-        <span className="font-medium mr-2">{post.author?.username}</span>
+        <span className="font-medium mr-2 ">{post.author.username}</span>
         {post.caption}
       </p>
       {comment.length > 0 && (
         <span
-          onClick={() => {
-            dispatch(setSelectedPost(post));
-            setOpen(true);
-          }}
-          className="cursor-pointer text-sm text-gray-400"
+          onClick={() => setOpen(true)}
+          className="cursor-pointer text-sm text-gray-300"
         >
           View all {comment.length} comments
         </span>
       )}
+
       <CommentDialog open={open} setOpen={setOpen} />
       <div className="flex items-center justify-between">
         <input

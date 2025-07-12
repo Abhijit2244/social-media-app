@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "@/main";
 import { setPosts } from "@/redux/postSlice";
 import axios from "axios";
 import { useEffect } from "react";
@@ -8,12 +9,10 @@ const useGetAllPost = () => {
   useEffect(() => {
     const fetchAllPost = async () => {
       try {
-        const res = await axios.get(
-          "https://social-media-app-1-qdnj.onrender.com/api/v1/post/all",
-          { withCredentials: true }
-        );
+        const res = await axios.get(`${API_BASE_URL}/api/v1/post/all`, {
+          withCredentials: true,
+        });
         if (res.data.success) {
-          console.log(res.data.posts);
           dispatch(setPosts(res.data.posts));
         }
       } catch (error) {
@@ -23,4 +22,5 @@ const useGetAllPost = () => {
     fetchAllPost();
   }, []);
 };
+
 export default useGetAllPost;
