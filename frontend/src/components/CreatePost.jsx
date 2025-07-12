@@ -9,17 +9,17 @@ import { toast } from "sonner";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setPosts } from "@/redux/postSlice";
+import { API_BASE_URL } from "@/main";
 
 const CreatePost = ({ open, setOpen }) => {
   const imageRef = useRef();
   const [file, setFile] = useState("");
   const [caption, setCaption] = useState("");
   const [imagePreview, setImagePreview] = useState("");
+  const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const { user } = useSelector((store) => store.auth);
   const { posts } = useSelector((store) => store.post);
-  const dispatch = useDispatch();
-
   const fileChangeHandler = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -28,7 +28,6 @@ const CreatePost = ({ open, setOpen }) => {
       setImagePreview(dataUrl);
     }
   };
-
   const createPostHandler = async (e) => {
     const formData = new FormData();
     formData.append("caption", caption);
@@ -36,7 +35,7 @@ const CreatePost = ({ open, setOpen }) => {
     try {
       setLoading(true);
       const res = await axios.post(
-        "https://social-media-app-1-qdnj.onrender.com/api/v1/post/addpost",
+        `${API_BASE_URL}/api/v1/post/addpost`,
         formData,
         {
           headers: {
@@ -46,7 +45,7 @@ const CreatePost = ({ open, setOpen }) => {
         }
       );
       if (res.data.success) {
-        dispatch(setPosts([res.data.post, ...posts])); // [1] -> [1,2] -> total element = 2
+        dispatch(setPosts([res.data.post, ...posts]));
         toast.success(res.data.message);
         setOpen(false);
       }
@@ -60,12 +59,12 @@ const CreatePost = ({ open, setOpen }) => {
   return (
     <Dialog open={open}>
       <DialogContent onInteractOutside={() => setOpen(false)}>
-        <DialogHeader className="text-center font-semibold">
+        <DialogHeader className="text-center font-bold">
           Create New Post
         </DialogHeader>
         <div className="flex gap-3 items-center">
           <Avatar>
-            <AvatarImage src={user?.profilePicture} alt="img" />
+            <AvatarImage src={user?.profilePicture} alt="pic" />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
           <div>
@@ -77,13 +76,13 @@ const CreatePost = ({ open, setOpen }) => {
           value={caption}
           onChange={(e) => setCaption(e.target.value)}
           className="focus-visible:ring-transparent border-none"
-          placeholder="Write a caption..."
+          placeholder="write a caption"
         />
         {imagePreview && (
           <div className="w-full h-64 flex items-center justify-center">
             <img
               src={imagePreview}
-              alt="preview_img"
+              alt="img_prev"
               className="object-cover h-full w-full rounded-md"
             />
           </div>
@@ -96,9 +95,9 @@ const CreatePost = ({ open, setOpen }) => {
         />
         <Button
           onClick={() => imageRef.current.click()}
-          className="w-fit mx-auto bg-[#0095F6] hover:bg-[#258bcf] "
+          className="w-fit mx-auto bg-[#0095F6] hover:bg-[#5db6f1]  "
         >
-          Select from computer
+          select from computer
         </Button>
         {imagePreview &&
           (loading ? (
@@ -108,7 +107,7 @@ const CreatePost = ({ open, setOpen }) => {
             </Button>
           ) : (
             <Button
-              onClick={createPostHandler}
+              onClick={() => createPostHandler()}
               type="submit"
               className="w-full"
             >

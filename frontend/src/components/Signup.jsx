@@ -6,27 +6,27 @@ import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useSelector } from "react-redux";
-
+import { API_BASE_URL } from "@/main";
 const Signup = () => {
   const [input, setInput] = useState({
     username: "",
     email: "",
     password: "",
   });
-  const [loading, setLoading] = useState(false);
-  const { user } = useSelector((store) => store.auth);
   const navigate = useNavigate();
-
+  const { user } = useSelector((store) => store.auth);
+  const [loading, setLoading] = useState(false);
   const changeEventHandler = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
   };
 
   const signupHandler = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    console.log(input);
     try {
-      setLoading(true);
       const res = await axios.post(
-        "https://social-media-app-1-qdnj.onrender.com/api/v1/user/register",
+        `${API_BASE_URL}/api/v1/user/register`,
         input,
         {
           headers: {
@@ -51,12 +51,11 @@ const Signup = () => {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     if (user) {
       navigate("/");
     }
-  }, []);
+  });
   return (
     <div className="flex items-center w-screen h-screen justify-center">
       <form
@@ -66,7 +65,7 @@ const Signup = () => {
         <div className="my-4">
           <h1 className="text-center font-bold text-xl">LOGO</h1>
           <p className="text-sm text-center">
-            Signup to see photos & videos from your friends
+            signup to see photos and videos from your freinds
           </p>
         </div>
         <div>
@@ -101,15 +100,17 @@ const Signup = () => {
         </div>
         {loading ? (
           <Button>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Please wait
+            <Loader2 className="mr-2 h-4 w-4 animate-spin " />
+            Please wait...
           </Button>
         ) : (
           <Button type="submit">Signup</Button>
         )}
+
         <span className="text-center">
+          {" "}
           Already have an account?{" "}
-          <Link to="/login" className="text-blue-600">
+          <Link to="/login" className="text-blue-500">
             Login
           </Link>
         </span>

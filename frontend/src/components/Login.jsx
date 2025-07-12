@@ -7,27 +7,28 @@ import { Link, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { setAuthUser } from "@/redux/authSlice";
+import { API_BASE_URL } from "@/main";
 
 const Login = () => {
   const [input, setInput] = useState({
     email: "",
     password: "",
   });
-  const [loading, setLoading] = useState(false);
-  const { user } = useSelector((store) => store.auth);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
+  const { user } = useSelector((store) => store.auth);
+  const [loading, setLoading] = useState(false);
   const changeEventHandler = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
   };
 
   const signupHandler = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    console.log(input);
     try {
-      setLoading(true);
       const res = await axios.post(
-        "https://social-media-app-1-qdnj.onrender.com/api/v1/user/login",
+        `${API_BASE_URL}/api/v1/user/login`,
         input,
         {
           headers: {
@@ -52,12 +53,11 @@ const Login = () => {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     if (user) {
       navigate("/");
     }
-  }, []);
+  });
   return (
     <div className="flex items-center w-screen h-screen justify-center">
       <form
@@ -67,9 +67,10 @@ const Login = () => {
         <div className="my-4">
           <h1 className="text-center font-bold text-xl">LOGO</h1>
           <p className="text-sm text-center">
-            Login to see photos & videos from your friends
+            login to see photos and videos from your freinds
           </p>
         </div>
+
         <div>
           <span className="font-medium">Email</span>
           <Input
@@ -92,16 +93,17 @@ const Login = () => {
         </div>
         {loading ? (
           <Button>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Please wait
+            <Loader2 className="mr-2 h-4 w-4 animate-spin " />
+            Please wait...
           </Button>
         ) : (
           <Button type="submit">Login</Button>
         )}
 
         <span className="text-center">
-          Dosent have an account?{" "}
-          <Link to="/signup" className="text-blue-600">
+          {" "}
+          Don't have an account?{" "}
+          <Link to="/signup" className="text-blue-500">
             Signup
           </Link>
         </span>
